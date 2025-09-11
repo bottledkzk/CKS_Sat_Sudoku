@@ -7,5 +7,5 @@
 <Program>为可运行的程序
 
 Program 中的Sudoku为图形界面，注意保存编码为GKB，同时必须和%-sudoku.txt数独格局文件放在一起
-
+同时，本程序在Vscode中编译，使用了EasyX图形库
 ————By BottleDKZK(https://github.com/bottledkzk) in 2025.09
