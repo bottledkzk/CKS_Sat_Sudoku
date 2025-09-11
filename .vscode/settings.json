@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "cdcl.h": "c",
+        "dpll.h": "c",
+        "sudukoh.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
