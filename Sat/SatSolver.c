@@ -253,6 +253,7 @@ int main(){
                 system("pause");
                 return 0;
             }
+            printf("\n");
             while ((chtp = fgetc(fq)) != EOF) {
                 putchar(chtp); // 输出字符
             }
@@ -267,6 +268,7 @@ int main(){
                 system("pause");
                 return 0;
             }
+            printf("\n");
             while ((chtp = fgetc(fq)) != EOF) {
                 putchar(chtp); // 输出字符
             }
