@@ -1,6 +1,43 @@
 #include "CDCL.h"
 #include "DPLL.h"
+void print_DPLL_Clauses(DPLL_Cnf *cnf) {
+    printf("\nDPLL公式解析:\n");
+    printf("变量数量: %d\n", cnf->lnum);
+    printf("子句数量: %d\n", cnf->cnum);
+    
+    DPLL_Clause *current_clause = cnf->headC;
+    int clause_count = 1;
+    
+    while (current_clause != NULL) {
+        printf("子句 %d: ", clause_count++);
+        DPLL_Literal *current_literal = current_clause->headL;
+        
+        while (current_literal != NULL) {
+            printf("%d ", current_literal->order);
+            current_literal = current_literal->nextL;
+        }
+        printf("0\n"); // 子句结束标记
+        current_clause = current_clause->nextC;
+    }
+}
 
+// 打印CDCL公式的函数
+void print_CDCL_Clauses(Solver *s) {
+    printf("\nCDCL公式解析:\n");
+    printf("变量数量: %d\n", s->vars);
+    printf("原始子句数量: %d\n", s->origin_clauses);
+    printf("总子句数量: %d\n", s->clause_DB_size);
+    
+    for (int i = 0; i < s->clause_DB_size; i++) {
+        Clause *c = &s->clause_DB[i];
+        printf("子句 %d (LBD=%d): ", i+1, c->lbd);
+        
+        for (int j = 0; j < c->size; j++) {
+            printf("%d ", c->lits[j]);
+        }
+        printf("0\n"); // 子句结束标记
+    }
+}
 void wind_cmd_support_utf8(void){
     #ifdef WIN32
         system("chcp 65001 & cls");
@@ -174,6 +211,38 @@ int main(){
     }
     printf("\n");
     printf("注：1代表有解,0代表无解,-1代表超时\n");
+    char response;
+    printf("\n是否解析公式? 若是请按Y(y): ");
+    scanf(" %c", &response);
+    
+    if (response == 'Y' || response == 'y') {
+        printf("输入要解析的文件序号(1-12): ");
+        int file_to_parse;
+        scanf("%d", &file_to_parse);
+        
+        if (file_to_parse < 1 || file_to_parse > 12) {
+            printf("无效的文件序号!\n");
+        } else {
+            // 解析并显示DPLL结构
+            DPLL_Cnf *cnf_parse = (DPLL_Cnf*)malloc(sizeof(DPLL_Cnf));
+            if (DPLL_createCnf(cnf_parse, filename[file_to_parse - 1]) == DPLL_OK) {
+                print_DPLL_Clauses(cnf_parse);
+                DPLL_destoryCnf(cnf_parse);
+            } else {
+                printf("DPLL解析失败!\n");
+            }
+            
+            // 解析并显示CDCL结构
+            Solver s_parse;
+            init_solver(&s_parse);
+            if (parse(&s_parse, filename[file_to_parse - 1]) == 0) {
+                print_CDCL_Clauses(&s_parse);
+            } else {
+                printf("CDCL解析失败!\n");
+            }
+            free_solver(&s_parse);
+        }
+    }
     free(fileOrder);
     free(backtime);
     printf("————Made by Bottledkzk————\n");

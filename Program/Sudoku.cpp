@@ -32,10 +32,11 @@ typedef struct {
 // 按钮定义
 Button buttons[] = {
     {BUTTON_OFFSET_X, BUTTON_OFFSET_Y, BUTTON_WIDTH, BUTTON_HEIGHT, "清空输入"},
-    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT, "生成数独"},
-    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 2*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "生成解"},
-    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 3*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "验证正确"},
-    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 4*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "退出程序"}
+    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT, "调取数独"},
+    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 2*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "生成数独"},
+    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 3*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "生成解"},
+    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 4*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "验证正确"},
+    {BUTTON_OFFSET_X, BUTTON_OFFSET_Y + 5*(BUTTON_HEIGHT + BUTTON_SPACING), BUTTON_WIDTH, BUTTON_HEIGHT, "退出程序"}
 };
 
 // 函数声明
@@ -45,6 +46,7 @@ bool isPointInButton(int x, int y, Button btn);
 int getCellFromCoord(int x, int y);
 void clearUserInput();
 void generateSudoku();
+void generateUniqueSudoku();
 void solveSudoku();
 bool validateSudoku();
 void drawTitle();
@@ -89,20 +91,23 @@ int main() {
                         case 0: // 清空输入
                             clearUserInput();
                             break;
-                        case 1: // 生成数独
+                        case 1: // 调取数独 (原生成数独)
                             generateSudoku();
                             break;
-                        case 2: // 生成解
+                        case 2: // 生成数独 (新功能)
+                            generateUniqueSudoku();
+                            break;
+                        case 3: // 生成解
                             solveSudoku();
                             break;
-                        case 3: // 验证正确
+                        case 4: // 验证正确
                             if (validateSudoku()) {
                                 MessageBox(GetHWnd(), "恭喜！数独解答正确。", "验证结果", MB_OK);
                             } else {
                                 MessageBox(GetHWnd(), "数独解答有误，请检查。", "验证结果", MB_OK);
                             }
                             break;
-                        case 4: // 退出程序
+                        case 5: // 退出程序
                             closegraph();
                             return 0;
                     }
@@ -279,7 +284,7 @@ void clearUserInput() {
     }
 }
 
-// 生成数独 - 集成SudokuH.h中的功能
+// 调取数独 - 从文件中读取
 void generateSudoku() {
     // 使用read_sudoku_from_file从文件中读取数独
     if (read_sudoku_from_file("%-sudoku.txt", sudoku)) {
@@ -292,6 +297,30 @@ void generateSudoku() {
     } else {
         // 如果读取失败，显示错误消息
         MessageBox(GetHWnd(), "无法读取数独文件", "错误", MB_OK);
+    }
+}
+
+// 生成唯一解数独
+void generateUniqueSudoku() {
+    char output[82]; // 81个字符 + 结束符
+    
+    if (generate_sudoku_puzzle(output)) {
+        // 解析生成的数独字符串
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                char c = output[i * SIZE + j];
+                if (c == '.') {
+                    sudoku[i][j] = 0;
+                    initial[i][j] = 0;
+                } else {
+                    sudoku[i][j] = c - '0';
+                    initial[i][j] = c - '0';
+                }
+            }
+        }
+        drawBoard();
+    } else {
+        MessageBox(GetHWnd(), "生成数独失败", "错误", MB_OK);
     }
 }
 

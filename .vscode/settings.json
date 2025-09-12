@@ -2,7 +2,9 @@
     "files.associations": {
         "cdcl.h": "c",
         "dpll.h": "c",
-        "sudukoh.h": "c"
+        "sudukoh.h": "c",
+        "sathead.h": "c",
+        "stdio.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -3,7 +3,10 @@
 
 #define SIZE 9
 #define BOX_SIZE 3
-
+void generate_cnf_with_extra(int sudoku[SIZE][SIZE], int exclude_row, int exclude_col, int exclude_value, const char* filename);
+bool is_unique_solution(int sudoku[SIZE][SIZE], int row, int col, int original_value);
+bool generate_full_solution(int sudoku[SIZE][SIZE]);
+bool is_unique_full_solution(int sudoku[SIZE][SIZE]); 
 // 读取数独初始格局从文件
 int read_sudoku_from_file(const char* filename, int sudoku[SIZE][SIZE]) {
     FILE* file = fopen(filename, "r");
@@ -271,4 +274,148 @@ void print_sudoku(int sudoku[SIZE][SIZE]) {
             printf("+-------+-------+-------+\n");
         }
     }
+}
+
+int generate_sudoku_puzzle(char* output) {
+    srand(time(NULL));
+    
+    // 1. 生成终盘T
+    int full_sudoku[SIZE][SIZE] = {0};
+    if (!generate_full_solution(full_sudoku)) {
+        return 0; // 生成终盘失败
+    }
+    
+    // 2. 初始化当前数独为终盘
+    int current_sudoku[SIZE][SIZE];
+    memcpy(current_sudoku, full_sudoku, SIZE * SIZE * sizeof(int));
+    
+    // 3. 随机挖空数量n (46到59之间)
+    int n = rand() % 14 + 46; // 46 to 59
+    
+    // 4. 生成随机位置列表
+    int positions[81];
+    for (int i = 0; i < 81; i++) positions[i] = i;
+    
+    // 打乱顺序
+    for (int i = 0; i < 81; i++) {
+        int j = rand() % 81;
+        int temp = positions[i];
+        positions[i] = positions[j];
+        positions[j] = temp;
+    }
+    
+    // 5. 对于前n个位置，直接挖空
+    for (int i = 0; i < n; i++) {
+        int pos = positions[i];
+        int row = pos / 9;
+        int col = pos % 9;
+        current_sudoku[row][col] = 0; // 挖空
+        printf("挖空(%d,%d)\n", row, col);
+    }
+    
+    // 6. 输出当前数独为一字符串
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (current_sudoku[i][j] == 0)
+                output[i * 9 + j] = '.';
+            else
+                output[i * 9 + j] = '0' + current_sudoku[i][j];
+        }
+    }
+    output[81] = '\0';
+    
+    return 1;
+}
+
+
+bool generate_full_solution(int sudoku[SIZE][SIZE]) {
+    int empty_sudoku[SIZE][SIZE] = {0};
+    generate_cnf(empty_sudoku, "empty.cnf");
+    
+    Solver solver;
+    init_solver(&solver);
+    char* EMPTY1 = (char*)"empty.cnf";
+
+    if (parse(&solver, EMPTY1) != 0) {
+        printf("Parse error for empty CNF\n");
+        free_solver(&solver);
+        return false;
+    }
+    int ret = solve(&solver);
+    if (ret != 10) { // 10 表示 SAT，有解
+        printf("Solve error for empty CNF: %d\n", ret);
+        free_solver(&solver);
+        return false;
+    }
+    extract_solution(&solver, sudoku);
+    free_solver(&solver);
+    return true;
+}
+
+bool is_unique_solution(int sudoku[SIZE][SIZE], int row, int col, int original_value) {
+    int temp_sudoku[SIZE][SIZE];
+    memcpy(temp_sudoku, sudoku, SIZE * SIZE * sizeof(int));
+    temp_sudoku[row][col] = 0;
+    char *EXTRA = (char*)"temp.cnf";
+    generate_cnf_with_extra(temp_sudoku, row, col, original_value, EXTRA);
+    
+    Solver solver;
+    init_solver(&solver);
+    char *TEMP = (char*)"temp.cnf";
+    int ret = parse(&solver, TEMP);
+    if (ret != 0) {
+        printf("Parse error for temp CNF\n");
+        free_solver(&solver);
+        return false;
+    }
+    ret = solve(&solver);
+    free_solver(&solver);
+    
+    return (ret == 20); 
+}
+void generate_cnf_with_extra(int sudoku[SIZE][SIZE], int exclude_row, int exclude_col, int exclude_value, const char* filename) {
+    generate_cnf(sudoku, filename);
+    
+    FILE* f = fopen(filename, "a");
+    if (!f) {
+        printf("Cannot open file for append: %s\n", filename);
+        return;
+    }
+    int var = exclude_row * 81 + exclude_col * 9 + exclude_value;
+    fprintf(f, "-%d 0\n", var);
+    fclose(f);
+}
+
+bool is_unique_full_solution(int sudoku[SIZE][SIZE]) {
+    generate_cnf(sudoku, "full.cnf");
+    
+    FILE* f = fopen("full.cnf", "a");
+    if (!f) {
+        printf("Cannot open file for append: full.cnf\n");
+        return false;
+    }
+    
+    // 添加一个子句：至少有一个格子与终盘不同
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            int var = i * 81 + j * 9 + sudoku[i][j];
+            fprintf(f, "-%d ", var);
+        }
+    }
+    fprintf(f, "0\n");
+    fclose(f);
+    
+    Solver solver;
+    init_solver(&solver);
+    char *filename = (char*)"full.cnf";
+    int ret = parse(&solver, filename);
+    if (ret != 0) {
+        printf("Parse error in is_unique_full_solution\n");
+        free_solver(&solver);
+        return false;
+    }
+    ret = solve(&solver);
+    free_solver(&solver);
+    
+    return (ret == 20); // 20表示无解，说明唯一
 }
