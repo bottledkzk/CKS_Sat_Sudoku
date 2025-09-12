@@ -243,6 +243,38 @@ int main(){
             free_solver(&s_parse);
         }
     }
+    char chtp;
+    for(int i = 0; i < fileNum; i++){
+        FILE *fq;
+        if(fileOrder[i] <= 6 || fileOrder[i] == 11){
+            fq = fopen(dplloutfile[fileOrder[i] - 1], "r");
+            if(fq == NULL){
+                printf("文件%d不存在,程序退出\n", fileOrder[i]);
+                system("pause");
+                return 0;
+            }
+            while ((chtp = fgetc(fq)) != EOF) {
+                putchar(chtp); // 输出字符
+            }
+            fclose(fq);
+        }
+        else
+            printf("DPLL文件%d未生成\n", fileOrder[i]);
+        if(fileOrder[i] != 8 && fileOrder[i] != 10){
+            fq = fopen(cdcloutfile[fileOrder[i] - 1], "r");
+            if(fq == NULL){
+                printf("文件%d不存在,程序退出\n", fileOrder[i]);
+                system("pause");
+                return 0;
+            }
+            while ((chtp = fgetc(fq)) != EOF) {
+                putchar(chtp); // 输出字符
+            }
+            fclose(fq);
+        }
+        else 
+            printf("CDCL文件%d未生成\n", fileOrder[i]);
+    }
     free(fileOrder);
     free(backtime);
     printf("————Made by Bottledkzk————\n");
