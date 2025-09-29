@@ -1,11 +1,20 @@
 华中科技大学计算机学院2024届程序课程设计
 基于DPLL算法的SAT求解器和数独游戏
 
+具体算法设计和实现请看报告内容。
+图形化数独游戏请运行Program文件夹下的Sudoku.exe文件
+Sat求解器性能测试请运行Sat文件夹下的SatSolver.exe文件
+
 <Data>存储cnf算例和结果，数独文件
 <Sat>中为Sat求解器源代码，包括基础DPLL算法和基于DPLL算法优化的CDCL算法的SAT求解器
-<Sudoku>中为数独游戏源代码，包括数独生成器、数独解题器、数独游戏界面等。
-<Program>为可运行的程序
+<Sudoku>中为数独游戏源代码，包括数独生成器、数独解题器、测试用数独游戏界面等。
+<Program>为可运行的程序，即最终完全版的图形化界面数独游戏
 
 Program 中的Sudoku为图形界面，注意保存编码为GKB，同时必须和%-sudoku.txt数独格局文件放在一起
 同时，本程序在Vscode中编译，使用了EasyX图形库
+
+注意，Sudoku中的数独游戏仅用于测试基本功能，同时必须与%-sudoku.txt在同一文件夹
+%-sudoku.txt存储着数独初始格局，为保证Program中的数独游戏的调取数独功能正常使用，请务必将%-sudoku.txt文件放在与Program同一文件夹下
+DPLL和CDCL的解文件存放与Data文件夹下，DPDL结果文件为[序号]/res, CDCL结果文件为[序号].res，算例文件请保持在Data文件下
+有其余问题请通过邮箱联系我：<bottledkzk@gmail.com>
 ————By BottleDKZK(https://github.com/bottledkzk) in 2025.09

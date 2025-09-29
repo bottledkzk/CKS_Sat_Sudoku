@@ -186,7 +186,7 @@ void generate_cnf(int sudoku[SIZE][SIZE], const char* cnf_filename) {
         {2, 1}, {2, 2}, {2, 3},
         {3, 1}, {3, 2}, {3, 3}
     };
-    
+    // 为每个数字在窗口内添加互斥约束，确保窗口内数字不重复
     for (int k = 1; k <= SIZE; k++) {
         for (int i = 0; i < 9; i++) {
             for (int j = i + 1; j < 9; j++) {
@@ -329,13 +329,14 @@ int generate_sudoku_puzzle(char* output) {
 
 
 bool generate_full_solution(int sudoku[SIZE][SIZE]) {
+    // 生成空数独的CNF约束
     int empty_sudoku[SIZE][SIZE] = {0};
     generate_cnf(empty_sudoku, "empty.cnf");
     
     Solver solver;
     init_solver(&solver);
     char* EMPTY1 = (char*)"empty.cnf";
-
+    // 解析CNF文件并求解，获取一个完整的数独终盘
     if (parse(&solver, EMPTY1) != 0) {
         printf("Parse error for empty CNF\n");
         free_solver(&solver);
